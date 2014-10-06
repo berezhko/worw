@@ -1,0 +1,17 @@
+A program 7-es turbo pascalban kült DOS alá. Ott teljesen jól muködött.
+Aztan jött a win32 és sokaig meg sem mukkant. Most egy borland patch segítségével
+újra életre kelt. 
+
+* Azonban nem érdemes kiprobálni a hangot. Egyrészt borzalmas,
+másrészt pedig direktbe piszkál a memóriába, amit nem nagyon szeret a win32.
+Emiatt a WORW.INIüben ki kell kapcsolni a hangot.
+
+* A grafika is DOS-os (ha valaki emlékszik még az egavga.bgi-re...). Ez nem biztos, 
+hogy minden win32-es platformon muködik. Ha nem muködne, akkor kikapcsolt grafikával
+kell összeereszteni a robotférgeket (-q kapcsoló). Azonban win2000 alatt muködik a
+grafika is, ha full képernyosre állítjuk a command promptot.
+
+* Azóta kicsit felgyorsultak a gépek és így a leglassabb üzemmódban is túl
+gyors a futása. Érdemes valami lassítóprogit futtani közben.
+
+Reméljük, hogy még most is mély szórakozást nyújt ez a regi program!!!!

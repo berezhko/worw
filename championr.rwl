@@ -1,0 +1,6 @@
+REM -- Balra  t
+LOOP
+	IF (LOOKAT(0,4)>=2)
+		RIGHT
+	ENDIF
+ENDLOOP

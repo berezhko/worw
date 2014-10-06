@@ -1,0 +1,304 @@
+                        WORW (War Of Robot Worms)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+                             (User's Manual)
+
+1. Description:
+
+  Two robot worms fight in an arena among walls and treasures.
+  Their aim is to collect the treasures and survive the other worm.
+  A worm dies if it crashes to a wall, to the other worm's body or
+  to himself.
+  The worms are controlled by programs written by the players. The
+  programs have to be written in Robot Worm Language, they must be in
+  a file with .rwl extension, and you can send them to the Arena
+  as parameters to worw.exe.
+
+  End of game: if a worm dies (then the other one wins), or if there
+  aren't any more treasure in the Arena, or through 1.000 step neither worm
+  picks up any treasure (the worm who has more treasure at this time,
+  wins).
+
+
+2. Robot Worm Language.
+
+  This is a language similar to BASIC in level and style, mixed with a
+  few LOGO. There aren't any declaration, all variables are declarated
+  automatically, you can use them anywhere.
+
+2.1. Variables:
+
+  These are the variables you can use:
+
+           10 of real type:    R0,R1,...,R9
+           10 of integer type: I0,I1,...,I9
+           10 of boolean type: B0,B1,...,B9
+
+  The program lines look like ones in Pascal or BASIC, except that
+  you needn't put neither any numbers at the beginning of the lines
+  nor semicolon at the end of each line.
+  But each line contains only one command and the length of the lines
+  is less or equal to 255 characters.
+  Now, let's have a look at the command's syntax:
+
+2.2. Commands:
+
+   value assignment:    LET R1:=[expression]
+
+   loops:
+     {counter}          FOR I0:=[expression1] TO [expression2]
+                          ...
+                        ENDFOR
+
+     {testing in front} WHILE ([logical expression])
+                          ...
+                        ENDWHILE
+
+     {neverend}         LOOP
+                          ...
+                        ENDLOOP
+
+   branch:              IF ([logical expression])
+                          ...
+                        ENDIF
+
+                      or
+
+                        IF ([logical expression])
+                          ...
+                        ELSE
+                          ...
+                        ENDIF
+
+   remark:              REM notes
+
+   control:             LEFT
+                        {the worm turns left}
+
+                        RIGHT
+                        {the worm turns right}
+
+   give control:        STEP
+                        {Give the execution control to the enemy's program.}
+
+   sending message:     MESS (text)
+                        {writes the text to the screen. The length of text
+                        must be less than 70 characters}
+
+
+  Among the loops you could find a neverending loop (LOOP).
+  If you write an RWL program, write it _always_ inside a neverending loop,
+  otherwise after your program terminated, your worm will - without control
+  - run to hell.
+
+2.3. Operators
+
+  arithmetic:  +,-,*,/,div,mod
+  logical:     and,or,xor,not
+
+2.4. Functions:
+
+                    RND(x): Returns a random number that is >=0
+                            and <x.
+
+                    SIN(x),
+                    COS(x): as usual; x is in rads.
+
+                    SQR(x): square of x
+                    SQRT(x):square root of x
+
+2.4.1. Special functions:
+                    LOOKAT (direction, howmany):what
+                    {Returns a code specifying what does he see in 'direction'
+                     at 'howmany' distance.
+                    direction:0-forward, 1-to the right, 2-to the left, 3-back
+                    (or:FW-forward, RT-right, LT-left, BK-back (constant))
+                    howmany: how many cells from the head.
+                    what:0-nothing, 1-treasure, 2-himself, 3-wall, 4-enemy}
+
+                    LOOK(x,y):what
+                    {x,y are two numbers in the range -5..5, they specify
+                    a cell in a coordinate system (where the centre is the
+                    worm's head, and is relative to the worm's direction),
+                    where the worm looks to.
+                    So: (0,0) is the worm's head.
+                    (0,1) is the same as LOOKAT(FW,1), (-3,0) is the same as
+                    LOOKAT(LT,3), (5,0) is the same as LOOKAT(RT,5).
+                    Returns the object's code, what could he see there:
+                    what:0-nothing, 1-treasure, 2-himself, 3-wall, 4-enemy}
+
+                    FEEL:direction
+                    {Returns the direction's code where he feels the nearest
+                    wall or enemy in an 5 cell range. If there are more,
+                    returns the nearest one.
+                    direction:0-forward, 1-at right, 2-at left, 3-back
+                    (vagy:FW-forward, RT-right, LT-left, BK-back, NT-nowhere)}
+
+                    LENGTH:number
+                    {Returns the length of worm}
+
+                    DIRECTION:number
+                    {Returns the worm's direction}
+
+                    GETX:number
+                    {Returns the worm's head's X coordinate
+                     in the Arena.}
+
+                    GETY:number
+                    {Returns the worm's head's Y coordinate
+                     in the Arena.}
+
+
+2.5. Relational operators:
+
+  In logical expressions you can use these relational operators as usual:
+                    =,>,<,<>,<=,>=
+
+
+2.6. Example:
+
+  Now there is a very simple example RWL program:
+
+    REM 1st exam. Name: TURN LEFT!
+    REM
+    REM neverending cycle
+    LOOP
+      REM if 3 cells ahead he sees a wall, enemy or his body...
+      IF (LOOKAT(FW,3)>=2)
+        REM then turn left.
+        LEFT
+      ENDIF
+    ENDLOOP
+
+
+3. Control-sharing between the two worms' programs:
+
+  The execution of the programs alternates between the two programs,
+  but not after every line. After three "important" line switches to
+  the other program.
+  "Important" lines are e.g.: IF, LET... "Not important" are ENDIF,
+  ENDWHILE, REM....
+  So: The Arena executes three "important" lines from the 1st program,
+  then executes three "important" lines from the 2nd program, then both
+  worms step one.
+  This "three-domination" is broken only by LEFT, RIGHT and STEP. After such
+  a line immediately comes the other program's turn.
+
+  "Important" commands, that increase the program's stepnumber:
+
+LET, FOR, IF, ENDLOOP, WHILE, LEFT, RIGHT, STEP.
+
+  "Not important" commands, that don't increase the program's stepnumber:
+
+REM, ENDFOR, ELSE, ENDIF, LOOP, ENDWHILE.
+
+
+4. Using Arena (worw.exe):
+
+  You have to specify the two RWL programs (that want to play) as parameters.
+  It is done like that (in the simplest case):
+
+C:\WORW> worw first.rwl second.rwl
+
+  Then some information comes to the screen about which worm fights in what
+  color. Please press any key to continue.
+  1., If any program have a syntax error, then you can read the
+      error message and the error's location.
+  2., If everything is OK, then the fight starts in the Arena.
+
+4.1. Run-time commands (keys):
+
+  The fight's speed can be modified with F2 through F10. With F1 you
+  can switch off/on the voice.
+  With the Esc key you can stop the fight.
+
+
+5. ini_file:
+
+  You can create a worw.ini file and set your own speed and voice.
+  In this file, these sections are available:
+
+  [SPEED]
+  number
+
+  The number is in the range 1..9, this determines the speed setting.
+  (1-fastest, 9-slowest)
+
+  [VOICE]
+  word
+
+  The word is YES or NO depending on whether you want sound effects or not.
+  (YES: sound is on, NO: sound is off)
+
+  [MIXING]
+  number
+
+  This number can go from 8000 to 30000 and determines the mixing frequency.
+  This is only particular if you want to run 'worw' on a machine slower than
+  386DX-40 Mhz. In this case, you can speed up the fight with a number less
+  than the default value 22050 (e.g. 11025), but the sound quality will be
+  poorer - a high frequency beep can be heard.
+
+  Example for worw.ini:
+[VOICE]
+YES
+[SPEED]
+3
+[MIXING]
+22050
+
+
+6. Campaign:
+
+  It is a bit complicated to compare two programs, because in only one fight
+  one can't see which program is better (the random events....etc). We
+  suggest that you would make more fights between them and from the results
+  you can see which is the better one (or the best).
+
+  For more fights (campaign) use the "-c" switch. After the -c switch
+  put a number which specifies how many fights will be processed.
+  E.g.: worw first.rwl second.rwl -c 21
+  for 21 fights.
+
+  After the fights, worw writes the result to the screen. Between
+  two fight it does not wait for 'press any key'.
+  For winning or egal the worm gets 1 point, for defeat it gets 0 point.
+
+
+7. Other switches:
+
+  You can use other ini file (not the worw.ini) with "-i".
+    -i <file>
+
+  The Arena writes to the log all the fight's result. Default log is
+  'worw.log', this file contains the RWL's name, the turns' results and
+  the final result (in campaign mode). You may use another log file with "-l".
+    -l <file>
+
+  In campaign mode, if you aren't interested in visual actions, you can
+  turn off the graphics with "-q". Then you will see only the actual
+  result and you will hear no sound.
+    -q
+
+  With the "-k" switch you can avoid the waiting for press a key at the
+  beginning and in the end. In campaign mode this is the default.
+    -k
+
+  If you have a slow PC and don't want to write (or modify) a worw.ini, you
+  can pop down the voice's quality with "-s".
+    -s
+
+8. Best regards:
+
+  We want many fun to you, when you play with WORW.
+  And please send comment, bug report (if you find), new idea or
+  message (or money) to bardosy@ludens.elte.hu or to sopi@eik.bme.hu
+
+                               v. B rdosy Lack¢
+                               ^^^^^^^^^^^^^^^^
+                       (idea, language definition, interpreter)
+                                      and
+                             Tarj n D‚nes Sop nka
+                             ^^^^^^^^^^^^^^^^^^^^
+                      (voice, expression evaluator, other things)
+
+(c)1996-97

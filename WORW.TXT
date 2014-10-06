@@ -1,0 +1,307 @@
+
+                        WORW (War Of Robot Worms)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                           (dokumentáció)
+
+1. Leírás:
+
+  Két robotféreg tekereg egy küzdõtéren - melyet arénának nevezünk -
+  kincsek és falak között. Céljuk, hogy minél több kincset össze-
+  gyûjtsenek és eközben ne haljanak meg. Haláluk akkor következik be
+  ha falnak, sajat maguknak vagy a másik féreg testének ütköznek.
+  A robotférgeket programok irányítják, melyeket a játékosok elõre
+  elkészítettek. Ezek a programok robotféreg-nyelven írodnak, egy
+  .rwl kiterjesztésû fileban tárolodnak és a worw.exe program
+  paramétereiként adhatók meg (küldhetõk az arénába).
+
+  Játék vége: Ha valamelyik féreg meghal (ez esetben az életben maradt
+  gyõz). Ha elfogynak a kincsek vagy 1.000 lépés óta egyik féreg sem
+  szedett össze kincset (és nem is halt meg) (ebben az esetben az a féreg
+  nyer, amelyik több kincset szedett össze).
+
+
+2. Robotféreg-nyelv (RWL):
+
+  BASIC szerû és szintû nyelv. Nincs deklaráció, minden változó automatikusan
+  deklarálódik, csak használni kell õket. Milyen változókat lehet használni?
+
+2.1. változók:
+           10db real tipusú    R0,R1,...,R9
+           10db integer tip    I0,I1,...,I9
+           10db boolean tip    B0,B1,...,B9
+
+  A programsorok ugyan úgy néznek ki, mint pascalban vagy basicben, csak
+  nem kell sorszámot írni a sorok elejére és nem kell pontosvesszõ a sorok
+  végére. Viszont egy sorban csak egy utasitás állhat és a sor hossz maximum
+  254 karakter lehet.
+  Nézzük most sorra a használható utasításokat szintaktikájukkal:
+
+2.2. utasítások:
+
+   értékadás:         LET R1:=[kifejezés]
+
+   ciklus:
+     {számláló}       FOR I0:=[kifejezés1] TO [kifejezés2]
+                        ...
+                      ENDFOR
+
+     {elöl tesztelõ}  WHILE ([logikai kifejezés])
+                        ...
+                      ENDWHILE
+
+     {végtelen}       LOOP
+                        ...
+                      ENDLOOP
+
+   elágazás:          IF ([logikai kifejezés])
+                        ...
+                      ENDIF
+
+                    vagy
+
+                      IF ([logikai kifejezés])
+                        ...
+                      ELSE
+                        ...
+                      ENDIF
+
+   megjegyzés:        REM megjegyzés
+
+   irányitó:          LEFT
+                      {A kukac balra fordul.}
+
+                      RIGHT
+                      {A kukac jobbra fordul.}
+
+   vezérlésátadás:    STEP
+                      {A vegrehajtást átadjuk az ellenseg programjának.}
+
+   üzenetküldés:      MESS (szöveg)
+                      {Kiírja szöveget a képerny‹re. A szöveg hossza nem
+                      lehet több mint 70 karakter.}
+
+
+  A ciklusoknál láthattunk egy végtelenciklus utasítást (LOOP)... Az RWL
+  programjainkat _mindig_ ilyen végtelen ciklusba foglalva írjuk meg, hiszen
+  ha nem ezt tesszük, akkor, amint lefutott, a férgünk kontrolálatlanul rohan
+  - nyíl egyenesen - a vesztébe.
+  Milyenek lehetnek az utasitásoknál szögletes zárójelben lévõ kifejezések?
+  A kifejezésekben konstansok és változók illetve függvények szerepelhetnek
+  mûveletekkel összekötve:
+
+2.3. mûveletek:
+
+   aritmetika:      +,-,*,/,div,mod
+   logikai:         and,or,xor,not
+
+2.4. függvények:
+                    RND(x): Egy véletlen egész számot ad vissza, mely >=0
+                            és <x.
+
+                    SIN(x),
+                    COS(x): Értelemszerûen, x radiánban értendõ.
+
+                    SQR(x): x négyzete
+                    SQRT(x):x négyzetgyöke
+
+2.4.1. speciális:
+                    LOOKAT (irány,mennyit):mit
+                    {Visszaadja, hogy irány-ban mennyit kockánnyira mit lát.
+                    irány:0-elõre, 1-jobbra, 2-balra, 3-hátra
+                    (vagy:FW-elõre, RT-jobbra, LT-balra, BK-hátra (konstansok))
+                    mennyit:hány cellánnyit nézzen arra.
+                    mit:0-semmi, 1-kincs, 2-önmaga, 3-fal, 4-ellenség}
+
+                    LOOK(x,y):mit
+                    {x,y egy -5..5 közötti szám, amellyel egy, a kukac
+                    fejéhez illesztett, menetiránynak megfelelõ relatív
+                    koordináta rendszerben adjuk meg, hogy hova néz a
+                    kukacunk.
+                    Azaz (0,0) maga a kukac feje - nem érdemes lekérdezni.
+                    (0,1) ugyan az, mint a LOOKAT(FW,1), (-3,0) ugyan az
+                    mint LOOKAT(LT,3), (5,0) ugyan az, mint LOOKAT(RT,5).
+                    Vissza pedig azt adja, hogy mit látott ott:
+                    mit:0-semmi, 1-kincs, 2-önmaga, 3-fal, 4-ellenség}
+
+                    FEEL:irány
+                    {Visszaadja, hogy melyik irányban van fal vagy ellenség
+                    öt cellán belül. Ha több is van, a közelebbit adja
+                    vissza.
+                    irany:0-elõre, 1-jobbra, 2-balra, 3-hátra, 4-semerre}
+                    (vagy:FW-elõre, RT-jobbra, LT-balra, BK-hátra, NT-semerre)
+
+                    LENGTH:szám
+                    {Visszaadja, hogy milyen hosszú a kukacunk.}
+
+                    DIRECTION:szám
+                    {Visszaadja, hogy merre megy a kukacunk.}
+
+                    GETX:szám
+                    {Visszaadja a kukacunk fejének X (vízszintesen,
+                    balról jobbra) koordinátáját a küzdõtéren}
+
+                    GETY:szám
+                    {Visszaadja a kukacunk fejének Y (függõlegesen,
+                    fentrõl lefelé) koordinátáját a küzdõtéren}
+
+
+  Logikai kifejezésekben természetesen a következõ relációkat is használhatjuk:
+
+2.5. relációk:
+                    =,>,<,<>,<=,>=
+
+
+2.6. Példa:
+  Álljon itt példaként egy nagyon egyszerû RWL program:
+
+    REM elsõ példa neve: BALRA ÁT!
+    REM
+    REM végtelenciklus
+    LOOP
+      REM ha maga elött 3-mal falat, önmagát vagy az ellenséget látja...
+      IF (LOOKAT(FW,3)>=2)
+        REM akkor balra fordul.
+        LEFT
+      ENDIF
+    ENDLOOP
+
+
+3. Vezérlés megosztás a két féreg programja között:
+
+  A játékosok programjait az aréna felváltva hajtja végre, de nem soronként
+  ugrál a vezérlésátadás, hanem három "lényeges" soronként. (Lényeges sor
+  pl az IF, LET stb... Lényegtelen pedig az ENDIF, ENDWHILE, REM, stb..)
+  Tehát valamelyik programban végrehajt három lényeges utasitást, aztán a
+  másik programból is végrehajt három lényeges utasitást és aztán mindkét
+  féreg lép egyet.
+  Ezt a hármasságot csak a LEFT, RIGHT és STEP parancsok törik meg, amik
+  után mindenképpen a másik program végrehajtása következik.
+
+  Lényeges utasitások, amik növelik a program lépésszámát:
+
+LET, FOR, IF, ENDLOOP, WHILE, LEFT, RIGHT, STEP.
+
+  Lényegtelen utasitások, amik nem növelik a program lépésszámát:
+
+REM, ENDFOR, ELSE, ENDIF, LOOP, ENDWHILE.
+
+
+4. Az Aréna (worw.exe) használata:
+
+  A játékban résztvevõ RWL programokat paraméterként kell megadni.
+  Az indítás így történik (a legegyszerûbb esetben):
+
+
+C:\WORW> worw elso.rwl masodik.rwl
+
+  Ekkor az információk jelennek meg a képernyõn, hogy melyik színnel
+  melyik féreg fog futni, aztán - egy billentyû megnyomása után -
+  két dolog történhet:
+  1., Ha valamelyik program nem megfelelõ szintaktikailag akkor
+      kiírja a hiba okát és helyét majd véget ér a futás.
+  2., Ha minden rendben van, akkor megjelenik az aréna és kezdetét
+      veszi a harc a két féreg között.
+
+
+4.1. beavatkozások:
+
+  A küzdelem sebességét állíthatjuk az F2-tõl az F10-ig terjedõ
+  funkcióbillentyûkkel. Az F1 gombbal pedig ki-be kapcsolhatjuk
+  a hangot.
+  Az Escape billentyû megnyomásával megszakíthatjuk a harcot.
+
+
+5. ini_file:
+
+  Létrehozhatunk egy worw.ini nevû filet a nekünk megfelelõ sebesség és
+  hang beállításokkal, amiben a következõ szekciókat állíthatjuk be:
+
+  [SPEED]
+  szám
+
+  A szám 1-tõl 9-ig terjedhet és az alapértelmezett sebességet állíthatjuk be.
+  (1 a leggyorsabb, 9 a leglassabb.)
+
+  [VOICE]
+  szó
+
+  A szó vagy a YES vagy a NO szavak lehetnek, attól függõen, hogy
+  szeretnénk-e hangot vagy sem.
+  (YES van hang, NO nincs hang)
+
+  [MIXING]
+  szám
+
+  A szám 8000-tõl 30000-ig terjedhet és a keverési frekvenciát állítja be.
+  Igazából csak akkor lényeges, ha 386DX40-nél lassabb gépünk van; akkor
+  a sebesség növelése (de a hangminõség romlása) céljából levehetjük az
+  alapértelmezett 22050 Hz-et mondjuk 11025 Hz-re - ekkor már sípolás
+  hallható.
+
+  Példa worw.ini-re:
+[VOICE]
+YES
+[SPEED]
+3
+[MIXING]
+22050
+
+
+6. Verseny:
+
+  Két program összeeresztése kényes dolog, mert egyetlen küzdelem nem tükrözi
+  tökéletesen egy-egy program elõnyeit a véletlenül bekövetkezõ események
+  miatt, ezért érdemes egy versenyen két programot többször is összeereszteni
+  és ezek eredményeibõl eldönteni, hogy melyik a jobb.
+
+  Ekkor kell a két program neve mellé a -c kapcsolót megadni, s utána egy
+  számot: ennyiszer fogja összeereszteni a két programot az Aréna.
+  pl. worw elso.rwl masodik.rwl -c 21
+
+  A menetek lefutása után összesíti a pontokat és az eredményt kiírja
+  a képernyõre. A menetek közben nem vár billentyûleütést, mint egyébként.
+  Gyõzelemért vagy döntetlenért 1 pont jár, vereségért 0 (egyébiránt
+  meglehetõsen ritka a döntetlen).
+
+
+7. Egyéb paraméterek:
+
+  Lehet más ini file-t használni, pl. versenyhez gyorsítunk, vagy ahhoz nem
+  kell hang. Ekkor
+    -i <file>
+
+  Az Aréna minden menet eredményét egy file-ba rögzíti, alapértelmezésben
+  ez a worw.log. Ez tartalmazza az rwl-ek nevét, az egyes menetek eredményét
+  és a végeredményt (amennyiben 1-nél több menet volt). De ez a file minden
+  futtatáskor felülírja az elõzõt. Ennek megelõzésére átirányíthatjuk a logot
+  máshova:
+    -l <file>
+
+  Különösen verseny módban lehet szükséges, hogy valakit nem érdekel a harc
+  menete, csak az, hogy ki hányszor gyõzött. Ezért kikapcsolhatja a grafikát
+  (ezzel együtt a hangot is), ekkor csak a pillanatnyi állás látszik:
+	-q
+
+  A -k kapcsolóval azt érhetjük el, hogy nincs billentyûre várás az elején
+  meg a végén. Ez alapértelmezett, ha verseny módban vagyunk (ld. a -c
+  kapcsolót az elõzõ fejezetben).
+
+  Ha lassú a gépünk, de nem akarunk a WORW.INIvel szórakozni, gyengíthetjük
+  a hangminõséget a -s kapcsolóval.
+
+
+8. Jókivánságok:
+
+  A játékhoz sok örömet kívánnak a program készítõi:
+
+                               v. Bárdosy Lackó
+                               ^^^^^^^^^^^^^^^^
+                       (ötlet, nyelv definíció, interpreter)
+                                      és
+                             Tarján Dénes Sopánka
+                             ^^^^^^^^^^^^^^^^^^^^
+                      (hang, kifejezés kiértékelés, apróságok)
+
+(c)1996-97
+
+http://webspn.hit.bme.hu/~bardosy/worw/
